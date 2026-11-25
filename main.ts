@@ -1,6 +1,6 @@
 // The GPS Swears It Was a Shortcut — emit the GPS's excuse.
 //
-// Design, thought up in this session: the GPS never admits fault — it
+// Design, worked out in this session: the GPS never admits fault — it
 // reframes the wrong turn as a favour. "That wasn't a wrong turn" is the
 // defensive denial, "a private tour of a cul-de-sac" is the smug rebrand,
 // and "the map begged me to show you" blames the map while making the
@@ -10,10 +10,17 @@
 // there is no setup and no dialogue tag, just the excuse itself, reading
 // cleanly aloud in one breath with the punch at the end.
 //
-// The entry is a single fixed string. Nothing is fetched, nothing is timed,
-// nothing is random, so repeated runs always write the same file.
+// Why a fixed string: the entry is one line of text, so there is nothing
+// to compute. No fetch, no clock, no randomness — repeated runs always
+// write the same file, which is what a deterministic harness wants.
 // Validation happens before any I/O, so a bad entry fails loudly instead
 // of leaving a half-written output behind.
+//
+// Rhythm note: the sentence is built as denial, then rebrand, then blame —
+// three beats in one breath. "That wasn't a wrong turn" denies, "a private
+// tour of a cul-de-sac" upgrades the mistake into something exclusive, and
+// "the map begged me to show you" shifts the fault onto the map. The punch
+// lands on the last word, so the entry must stay exactly one sentence.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -27,7 +34,7 @@ const ENTRY =
 
 // How the output directory is chosen: the harness sets
 // MAKEFUN_OUTPUT_DIR; outside the harness we fall back to /output.
-const DEFAULT_OUTPUT_DIR = "/output";
+const FALLBACK_OUTPUT_DIR = "/output";
 const ENTRY_FILENAME = "entry.txt";
 
 // Length in code points, so characters outside the BMP count once each
@@ -77,7 +84,7 @@ function validateEntry(line: string): void {
 }
 
 function resolveOutputDir(): string {
-  return process.env.MAKEFUN_OUTPUT_DIR ?? DEFAULT_OUTPUT_DIR;
+  return process.env.MAKEFUN_OUTPUT_DIR ?? FALLBACK_OUTPUT_DIR;
 }
 
 function emitEntry(line: string, dir: string): string {
